@@ -3,8 +3,6 @@ Simple text-based snake-like game
 
 Current version - 0.3
 
-[Download](https://github.com/LooHuH/Wormer-Text-Edition/raw/27b0a6e51ca4884203811ecde109b91770a905ca/Wormer_0.3.zip)
-
 Changelog(RUSSIAN ALERT!!!):
 
 0.3 - 01.05.2023 - 24.05.2023
