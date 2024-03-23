@@ -1,0 +1,4 @@
+ + — — — — — — — — — — — — — — — — +
+ |   Do you really want to reset   |
+ |        your score? (y/n)        |
+ + — — — — — — — — — — — — — — — — +
