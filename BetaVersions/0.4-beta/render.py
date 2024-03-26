@@ -23,7 +23,7 @@ __point_plus = vars.Color.gold + '+' + vars.Color.disabled
 __point_separator = vars.Color.red + ':' + vars.Color.disabled
 
 
-def __clear():
+def clear():
     os.system('cls')
 
 
@@ -64,15 +64,15 @@ def __printfile(filename: str):
 
 
 def input_error():
-    __clear()
+    clear()
     __printfile('input_error')
 
 
 def menu():
     texture_text_wormer_ver = __text_in_line('Wormer - 0.4')
-    texture_text_score = __text_in_line(f'Best score: {defs.get_best_score()}')
+    texture_text_score = __text_in_line(f'Best score: {defs.Get.best_score()}')
     
-    __clear()
+    clear()
     __printlines(
             __texture_line,
             texture_text_wormer_ver,
@@ -123,14 +123,14 @@ def game_map(score: int, worm, point_plus, point_separator):
     map_lines.append(__texture_line)
     map_lines.append(vars.Color.default)
     
-    __clear()
+    clear()
     __printlines(score_lines)
     __printlines(map_lines)
     __printfile('back_to_menu_control')
 
 
 def you_lose():
-    __clear()
+    clear()
     __printfile('you_lose')
 
 
@@ -142,11 +142,11 @@ def level_select():
         level_options_lines.append(__text_in_line(f'{level} - level {level}', align='left'))
     level_options_lines.append(__texture_line)
     
-    __clear()
+    clear()
     __printfile('level_select_title')
     __printlines(
         __texture_line,
-        __text_in_line(f'Current level: {defs.get_current_level()}'),
+        __text_in_line(f'Current level: {defs.Get.current_level()}'),
         __texture_line
     )
     __printlines(level_options_lines)
@@ -154,7 +154,7 @@ def level_select():
 
 
 def controls():
-    all_controls = defs.get_controls().in_list
+    all_controls = defs.Get.controls().in_list
     all_controls_text = ['up', 'left', 'down', 'right']
     
     text_list = []
@@ -164,14 +164,14 @@ def controls():
     text_list.insert(0, __texture_line)
     text_list.append(__texture_line)
     
-    __clear()
+    clear()
     __printfile('controls_title')
     __printlines(text_list)
     __printfile('back_to_menu_control')
 
 
 def score_reset_question():
-    __clear()
+    clear()
     __printfile('score_reset_question')
 
 

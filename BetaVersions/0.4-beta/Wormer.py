@@ -8,8 +8,8 @@ Date of release - 22.03.24
 
 import os
 
-import keyboard as kb_1
-import msvcrt as kb_2
+import msvcrt as menu_kb
+import keyboard as game_kb
 
 from time import sleep as pause
 
@@ -21,28 +21,17 @@ import defs
 import files_interaction as f
 
 
-def __pressed_key(*expected_keys, wait_for_input: bool = True, exit_after: float = None):
+def __pressed_key(*expected_keys):
     if expected_keys:
         expected_keys = defs.adapted_list(expected_keys)
-        key_pressed = None
         while True:
-            if exit_after is None:
-                for key in expected_keys:
-                    if kb_1.is_pressed(key):
-                        key_pressed = key
-            else:
-                pause(exit_after)
-                if kb_2.kbhit():
-                    key = kb_2.getwch()
-                    if key in expected_keys:
-                        key_pressed = key
-            if wait_for_input:
-                if key_pressed:
-                    return key_pressed
-            else:
-                return key_pressed
+            if menu_kb.kbhit():
+                key = menu_kb.getwch()
+                if key in expected_keys:
+                    return key
     else:
-        return False
+        render.input_error()
+        __back_to_menu(pause_time=2)
 
 
 def main_menu():
@@ -171,10 +160,17 @@ def __play():
     class GameOver(Exception):
         pass
 
-    def you_lose():
-        if score > defs.get_best_score():
-            defs.set_best_score(score)
-        render.you_lose()
+    def check_input(event):
+        global last_input
+        if event.event_type == game_kb.KEY_DOWN:
+            last_input = event.name
+    
+    def you_lose(kb_hook, show_lose_text: bool = True):
+        if score > defs.Get.best_score():
+            defs.Set.best_score(score)
+        if show_lose_text:
+            render.you_lose()
+        game_kb.unhook(kb_hook)
         __back_to_menu(pause_time=2)
 
     worm = Worm()
@@ -182,9 +178,15 @@ def __play():
     separator = Point()
 
     level_times = (1.5, 0.75, 0.5, 0.25, 0.1)
-    current_level_time = level_times[defs.get_current_level()]
+    current_level_time = level_times[defs.Get.current_level()]
 
     event_counter = 0
+
+    kb_hook = game_kb.hook(check_input)
+    last_input = None
+    controls = defs.Get.controls()
+    controls_list = controls.in_list
+    controls_list.append('b')
 
     while True:
         score = len(worm) - 1
@@ -195,7 +197,7 @@ def __play():
         try:
             worm.move()
         except GameOver:
-            you_lose()
+            you_lose(kb_hook)
             break
 
         if plus.collides_with(worm.body[Worm.head]):
@@ -203,29 +205,23 @@ def __play():
             plus.respawn(collide_check=worm)
 
         render.game_map(score, worm, plus, separator)
+        
+        pause(current_level_time)
 
-        controls = defs.get_controls()
-        controls_list = controls.in_list
-        controls_list.append('b')
-        pressed_key = __pressed_key(controls_list, wait_for_input=False, exit_after=current_level_time)
-        if pressed_key:
-            if pressed_key == controls.in_dict['up']:
+        last_input_backup = last_input
+        if last_input:
+            last_input = None
+            if last_input_backup == controls.in_dict['up']:
                 worm.change_direction('up')
-            elif pressed_key == controls.in_dict['left']:
+            elif last_input_backup == controls.in_dict['left']:
                 worm.change_direction('left')
-            elif pressed_key == controls.in_dict['down']:
+            elif last_input_backup == controls.in_dict['down']:
                 worm.change_direction('down')
-            elif pressed_key == controls.in_dict['right']:
+            elif last_input_backup == controls.in_dict['right']:
                 worm.change_direction('right')
-
-            elif pressed_key == 'b':
-                __back_to_menu()
+            elif last_input_backup == 'b':
+                you_lose(kb_hook, show_lose_text=False)
                 break
-
-        elif pressed_key is False:
-            render.input_error()
-            __back_to_menu(pause_time=2)
-            break
 
 
 def __level_select():
@@ -245,7 +241,7 @@ def __controls():
     
     """
     use this string when you implement key binding feature
-    options = defs.get_controls().in_list
+    options = defs.Get.controls().in_list
     options.append('b')
     """
     

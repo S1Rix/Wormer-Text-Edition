@@ -10,31 +10,30 @@ def show_error():
     traceback.print_exc()
 
 
-def get_best_score():
-    return f.get(vars.files_data_best_score)
+class Get:
+    def best_score():
+        return f.get(vars.files_data_best_score)
+
+    def controls():
+        class Container:
+            def __init__(self, __controls_list):
+                self.in_list = __controls_list
+                self.in_dict = {
+                    'up': __controls_list[0],
+                    'left': __controls_list[1],
+                    'down': __controls_list[2],
+                    'right': __controls_list[3]
+                }
+        controls_list = f.get_list(vars.files_data_controls)
+        return Container(controls_list)
+
+    def current_level():
+        return f.get(vars.files_data_current_level)
 
 
-def set_best_score(arg: int):
-    f.update(vars.files_data_best_score, arg)
-
-
-def get_controls():
-    controls_list = f.get_list(vars.files_data_controls)
-
-    class Container:
-        def __init__(self):
-            self.in_list = controls_list
-            self.in_dict = {
-                'up': controls_list[0],
-                'left': controls_list[1],
-                'down': controls_list[2],
-                'right': controls_list[3]
-            }
-    return Container()
-
-
-def get_current_level():
-    return f.get(vars.files_data_current_level)
+class Set:
+    def best_score(arg: int):
+        f.update(vars.files_data_best_score, arg)
 
 
 def adapted_list(args):
