@@ -16,3 +16,4 @@ class Color:
 
 files_data_best_score = os.path.join(__main_path, 'data', 'best_score.txt')
 files_data_controls = os.path.join(__main_path, 'data', 'controls.txt')
+files_data_current_level = os.path.join(__main_path, 'data', 'current_level.txt')

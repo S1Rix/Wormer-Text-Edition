@@ -1,7 +1,7 @@
- + — — — — — — — — — — — — — — — — +
- |       1 - Play                  |
- |       2 - Change level          |
- |       3 - Controls              |
- |       4 - Reset best score      |
- |       e - Exit                  |
- + — — — — — — — — — — — — — — — — +
+ + — — — — — — — — — — — — — — — +
+ |      1 - Play                 |
+ |      2 - Change level         |
+ |      3 - Controls             |
+ |      4 - Reset best score     |
+ |      e - Exit                 |
+ + — — — — — — — — — — — — — — — +
