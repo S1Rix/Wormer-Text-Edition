@@ -3,7 +3,7 @@ Wormer: Text Edition
 ver. 0.4
 By LooNuH
 Date of beginning - 22.03.24
-Date of release - 22.03.24
+Date of release - 26.03.24
 """
 
 import os
@@ -31,7 +31,8 @@ def __pressed_key(*expected_keys):
                     return key
     else:
         render.input_error()
-        __back_to_menu(pause_time=2)
+        render.back_to_menu_text()
+        pause(2)
 
 
 def main_menu():
@@ -50,12 +51,28 @@ def main_menu():
                 quit()
 
 
-def __back_to_menu(pause_time: int = 1):
-    render.back_to_menu_text()
-    pause(pause_time)
-
-
 def __play():
+    class Keyboard:
+        def __init__(self):
+            self.__last_input = None
+            self.__kb_hook = None
+
+        def __save_input(self, event):
+            if event.event_type == game_kb.KEY_DOWN:
+                self.__last_input = event.name
+
+        def get_input(self):
+            return self.__last_input
+
+        def reset_input(self):
+            self.__last_input = None
+
+        def hook(self):
+            self.__kb_hook = game_kb.hook(self.__save_input)
+
+        def unhook(self):
+            game_kb.unhook(self.__kb_hook)
+
     class MapObject:
         def __init__(self, x, y):
             self.x: int = x
@@ -160,19 +177,16 @@ def __play():
     class GameOver(Exception):
         pass
 
-    def check_input(event):
-        global last_input
-        if event.event_type == game_kb.KEY_DOWN:
-            last_input = event.name
-    
-    def you_lose(kb_hook, show_lose_text: bool = True):
+    def game_over(show_lose_text: bool = True):
         if score > defs.Get.best_score():
             defs.Set.best_score(score)
         if show_lose_text:
             render.you_lose()
-        game_kb.unhook(kb_hook)
-        __back_to_menu(pause_time=2)
+        kb.unhook()
+        render.back_to_menu_text()
+        pause(2)
 
+    kb = Keyboard()
     worm = Worm()
     plus = Point()
     separator = Point()
@@ -182,8 +196,7 @@ def __play():
 
     event_counter = 0
 
-    kb_hook = game_kb.hook(check_input)
-    last_input = None
+    kb.hook()
     controls = defs.Get.controls()
     controls_list = controls.in_list
     controls_list.append('b')
@@ -197,7 +210,7 @@ def __play():
         try:
             worm.move()
         except GameOver:
-            you_lose(kb_hook)
+            game_over()
             break
 
         if plus.collides_with(worm.body[Worm.head]):
@@ -208,19 +221,20 @@ def __play():
         
         pause(current_level_time)
 
-        last_input_backup = last_input
+        last_input = kb.get_input()
         if last_input:
-            last_input = None
-            if last_input_backup == controls.in_dict['up']:
+            kb.reset_input()
+            if last_input == controls.in_dict['up']:
                 worm.change_direction('up')
-            elif last_input_backup == controls.in_dict['left']:
+            elif last_input == controls.in_dict['left']:
                 worm.change_direction('left')
-            elif last_input_backup == controls.in_dict['down']:
+            elif last_input == controls.in_dict['down']:
                 worm.change_direction('down')
-            elif last_input_backup == controls.in_dict['right']:
+            elif last_input == controls.in_dict['right']:
                 worm.change_direction('right')
-            elif last_input_backup == 'b':
-                you_lose(kb_hook, show_lose_text=False)
+            elif last_input == 'b':
+                render.clear()
+                game_over(show_lose_text=False)
                 break
 
 
@@ -231,7 +245,8 @@ def __level_select():
         if choice in ('1', '2', '3', '4'):
             f.update(vars.files_data_current_level, choice)
         else:
-            __back_to_menu()
+            render.back_to_menu_text()
+            pause(1)
             return
 
 
@@ -247,7 +262,8 @@ def __controls():
     
     match __pressed_key(options):
         case 'b':
-            __back_to_menu()
+            render.back_to_menu_text()
+            pause(1)
 
 
 def __score_reset():
@@ -258,7 +274,8 @@ def __score_reset():
             render.score_reset_complete()
         case 'n':
             pass
-    __back_to_menu(pause_time=2)
+    render.back_to_menu_text()
+    pause(2)
 
 
 if __name__ == "__main__":

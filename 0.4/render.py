@@ -27,6 +27,10 @@ def clear():
     os.system('cls')
 
 
+def update():
+    print("\033[0;0H", end='')
+
+
 def __text_in_line(text: str, space_amount: int = 16, align: str = 'center'):
     space = ' '
     half_text_len = len(text) // 2
@@ -52,9 +56,9 @@ def __text_in_line(text: str, space_amount: int = 16, align: str = 'center'):
     return f' |{complete_line1 + text + complete_line2}|'
 
 
-def __printlines(*lines):
+def __printlines(*lines, start: str = ''):
     lines = defs.adapted_list(lines)
-    print('\n'.join(lines))
+    print(start + '\n'.join(lines))
 
 
 def __printfile(filename: str):
@@ -123,8 +127,8 @@ def game_map(score: int, worm, point_plus, point_separator):
     map_lines.append(__texture_line)
     map_lines.append(vars.Color.default)
     
-    clear()
-    __printlines(score_lines)
+    update()
+    __printlines(score_lines, start='\n')
     __printlines(map_lines)
     __printfile('back_to_menu_control')
 
@@ -142,7 +146,7 @@ def level_select():
         level_options_lines.append(__text_in_line(f'{level} - level {level}', align='left'))
     level_options_lines.append(__texture_line)
     
-    clear()
+    update()
     __printfile('level_select_title')
     __printlines(
         __texture_line,
