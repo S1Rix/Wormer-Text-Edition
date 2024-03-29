@@ -197,6 +197,9 @@ def level_select():
 def controls():
     all_controls = defs.Get.controls().in_list
     all_controls_text = ['up', 'left', 'down', 'right']
+    all_controls_emojis = ['⭡', '⭠', '⭣', '⭢']
+    if all_controls == all_controls_text:
+        all_controls = all_controls_emojis
     
     text_list = []
     for i in range(len(all_controls)):
