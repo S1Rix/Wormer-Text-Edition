@@ -11,24 +11,15 @@ __textures_path = os.path.join(__main_path, 'textures')
 
 __texture_line = ' + — — — — — — — — — — — — — — — +'
 
-__worm_head_texture = {
-    'up': vars.Color.default + '^' + vars.Color.disabled,
-    'down': vars.Color.default + 'v' + vars.Color.disabled,
-    'left': vars.Color.default + '<' + vars.Color.disabled,
-    'right': vars.Color.default + '>' + vars.Color.disabled
-    }
-__worm_tail = vars.Color.default + 'o' + vars.Color.disabled
 
-__point_plus = vars.Color.gold + '+' + vars.Color.disabled
-__point_separator = vars.Color.red + ':' + vars.Color.disabled
+def __printlines(*lines, start: str = ''):
+    print(start + '\n'.join(lines))
 
 
-def clear():
-    os.system('cls')
-
-
-def update():
-    print("\033[0;0H", end='')
+def __printfile(filename: str):
+    texture_file_path = os.path.join(__textures_path, f'{filename}.txt')
+    texture_file_content = f.get(texture_file_path)
+    print(texture_file_content)
 
 
 def __text_in_line(text: str, space_amount: int = 16, align: str = 'center'):
@@ -43,28 +34,46 @@ def __text_in_line(text: str, space_amount: int = 16, align: str = 'center'):
             space_amount2 = space_amount1
             if len(text) % 2 == 0:
                 space_amount2 += 1
-        
+
         case 'left':
             space_amount1 = 8
             space_amount2 = 2*(space_amount - half_text_len) - space_amount1 - 1
             if len(text) % 2 != 0:
                 space_amount2 -= 1
-        
+
     complete_line1 = space * space_amount1
     complete_line2 = space * space_amount2
-    
+
     return f' |{complete_line1 + text + complete_line2}|'
 
 
-def __printlines(*lines, start: str = ''):
-    lines = defs.adapted_list(lines)
-    print(start + '\n'.join(lines))
+def __rendered_options(options, selected_option):
+    options = [option['name'] for option in options]
+    options[selected_option] = f'>> {options[selected_option]} <<'
+    rendered_options = list()
+    rendered_options.append(__texture_line)
+    for option in options:
+        rendered_options.append(__text_in_line(option))
+    rendered_options.append(__texture_line)
+    return rendered_options
 
 
-def __printfile(filename: str):
-    texture_file_path = os.path.join(__textures_path, f'{filename}.txt')
-    texture_file_content = f.get(texture_file_path)
-    print(texture_file_content)
+def clear():
+    os.system('cls')
+
+
+def update():
+    print("\033[0;0H", end='')
+
+
+def render(func, **kwargs):
+    try:
+        if kwargs:
+            func(**kwargs)
+        else:
+            func()
+    except FileNotFoundError:
+        placeholder()
 
 
 def input_error():
@@ -72,11 +81,20 @@ def input_error():
     __printfile('input_error')
 
 
-def menu():
-    texture_text_wormer_ver = __text_in_line('Wormer - 0.4')
+def placeholder():
+    __printfile('placeholder')
+
+
+def menu(**kwargs):
+    texture_text_wormer_ver = __text_in_line('Wormer - 0.5')
     texture_text_score = __text_in_line(f'Best score: {defs.Get.best_score()}')
+
+    options = kwargs['options']
+    selected_option = kwargs['selected_option']
+
+    menu_options = __rendered_options(options, selected_option)
     
-    clear()
+    update()
     __printlines(
             __texture_line,
             texture_text_wormer_ver,
@@ -84,15 +102,31 @@ def menu():
             texture_text_score,
             __texture_line,
         )
-    __printfile('menu_controls')
+    __printlines(*menu_options)
 
 
 def back_to_menu_text():
     __printfile('back_to_menu_text')
 
 
-def game_map(score: int, worm, point_plus, point_separator):
+def game_map(**kwargs):
+    score = kwargs['score']
+    worm = kwargs['worm']
+    plus = kwargs['plus']
+    separator = kwargs['separator']
+
     texture_border = ' | '
+
+    texture_worm_head = {
+        'up': vars.Color.default + '^' + vars.Color.disabled,
+        'down': vars.Color.default + 'v' + vars.Color.disabled,
+        'left': vars.Color.default + '<' + vars.Color.disabled,
+        'right': vars.Color.default + '>' + vars.Color.disabled
+        }
+    texture_worm_tail = vars.Color.default + 'o' + vars.Color.disabled
+
+    texture_plus = vars.Color.gold + '+' + vars.Color.disabled
+    texture_separator = vars.Color.red + ':' + vars.Color.disabled
     
     score_lines = [
         __texture_line,
@@ -109,14 +143,14 @@ def game_map(score: int, worm, point_plus, point_separator):
     # place worm on cords
     for bodypart in worm.body:
         if bodypart.is_head:
-            field[bodypart.y][bodypart.x] = __worm_head_texture[worm.direction]
+            field[bodypart.y][bodypart.x] = texture_worm_head[worm.direction]
         else:
-            field[bodypart.y][bodypart.x] = __worm_tail
+            field[bodypart.y][bodypart.x] = texture_worm_tail
 
-    if point_plus.exists:
-        field[point_plus.y][point_plus.x] = __point_plus
-    if point_separator.exists:
-        field[point_separator.y][point_separator.x] = __point_separator
+    if plus.exists:
+        field[plus.y][plus.x] = texture_plus
+    if separator.exists:
+        field[separator.y][separator.x] = texture_separator
 
     # render map
     map_lines = list()
@@ -128,8 +162,8 @@ def game_map(score: int, worm, point_plus, point_separator):
     map_lines.append(vars.Color.default)
     
     update()
-    __printlines(score_lines, start='\n')
-    __printlines(map_lines)
+    __printlines(*score_lines, start='\n')
+    __printlines(*map_lines)
     __printfile('back_to_menu_control')
 
 
@@ -138,14 +172,18 @@ def you_lose():
     __printfile('you_lose')
 
 
+def settings(**kwargs):
+    options = kwargs['options']
+    selected_option = kwargs['selected_option']
+
+    settings_options = __rendered_options(options, selected_option)
+
+    update()
+    __printfile('settings_title')
+    __printlines(*settings_options)
+
+
 def level_select():
-    levels = list(range(1, 5))
-    level_options_lines = list()
-    level_options_lines.append(__texture_line)
-    for level in levels:
-        level_options_lines.append(__text_in_line(f'{level} - level {level}', align='left'))
-    level_options_lines.append(__texture_line)
-    
     update()
     __printfile('level_select_title')
     __printlines(
@@ -153,7 +191,6 @@ def level_select():
         __text_in_line(f'Current level: {defs.Get.current_level()}'),
         __texture_line
     )
-    __printlines(level_options_lines)
     __printfile('back_to_menu_control')
 
 
@@ -170,7 +207,7 @@ def controls():
     
     clear()
     __printfile('controls_title')
-    __printlines(text_list)
+    __printlines(*text_list)
     __printfile('back_to_menu_control')
 
 
@@ -181,7 +218,3 @@ def score_reset_question():
 
 def score_reset_complete():
     __printfile('score_reset_complete')
-
-
-def __placeholder():
-    __printfile('placeholder')

@@ -1,78 +1,99 @@
 """
 Wormer: Text Edition
-ver. 0.4
+ver. 0.5
 By LooNuH
-Date of beginning - 22.03.24
-Date of release - 26.03.24
+Date of beginning - 28.03.24
+Date of release - 29.03.24
 """
 
 import os
 
-import msvcrt as menu_kb
-import keyboard as game_kb
+import keyboard
 
 from time import sleep as pause
 
 from random import randint as random
 
 import vars
-import render
+import renders
+from renders import render
 import defs
 import files_interaction as f
 
 
-def __pressed_key(*expected_keys):
-    if expected_keys:
-        expected_keys = defs.adapted_list(expected_keys)
+class __Keyboard:
+    def __init__(self):
+        self.__last_input = None
+        self.__kb_hook = None
+        self.__key_pressed = False
+
+    def __input_catcher(self, event):
+        if event.event_type == keyboard.KEY_DOWN:
+            self.__last_input = event.name
+            self.__key_pressed = True
+        elif event.event_type == keyboard.KEY_UP:
+            self.__key_pressed = False
+
+    def get_input(self):
+        return self.__last_input
+
+    def key_pressed(self):
+        return self.__key_pressed
+
+    def reset_input(self):
+        self.__last_input = None
+
+    def hook(self):
+        self.__kb_hook = keyboard.hook(self.__input_catcher)
+
+    def unhook(self):
+        keyboard.unhook(self.__kb_hook)
+        self.reset_input()
+
+    @staticmethod
+    def detect(*expected_buttons):
         while True:
-            if menu_kb.kbhit():
-                key = menu_kb.getwch()
-                if key in expected_keys:
-                    return key
-    else:
-        render.input_error()
-        render.back_to_menu_text()
-        pause(2)
+            for button in expected_buttons:
+                if keyboard.is_pressed(button):
+                    return button
+
+
+def __build_menu(menu, options):
+    kb = __Keyboard()
+    selected_option = 0
+    max_option = len(options) - 1
+    renders.clear()
+    while True:
+        render(menu, options=options, selected_option=selected_option)
+        kb.hook()
+        while True:
+            if not kb.key_pressed():
+                last_input = kb.get_input()
+                if last_input == 'up' and selected_option > 0:
+                    kb.reset_input()
+                    selected_option -= 1
+                    break
+                elif last_input == 'down' and selected_option < max_option:
+                    kb.reset_input()
+                    selected_option += 1
+                    break
+                elif last_input == 'enter':
+                    kb.unhook()
+                    options[selected_option]['def']()
+                    return
 
 
 def main_menu():
+    menu_options = [
+        {'name': 'Play', 'def': __play},
+        {'name': 'Settings', 'def': __settings},
+        {'name': 'Exit', 'def': quit},
+    ]
     while True:
-        render.menu()
-        match __pressed_key('1', '2', '3', '4', 'e'):
-            case '1':
-                __play()
-            case '2':
-                __level_select()
-            case '3':
-                __controls()
-            case '4':
-                __score_reset()
-            case 'e':
-                quit()
+        __build_menu(renders.menu, menu_options)
 
 
 def __play():
-    class Keyboard:
-        def __init__(self):
-            self.__last_input = None
-            self.__kb_hook = None
-
-        def __save_input(self, event):
-            if event.event_type == game_kb.KEY_DOWN:
-                self.__last_input = event.name
-
-        def get_input(self):
-            return self.__last_input
-
-        def reset_input(self):
-            self.__last_input = None
-
-        def hook(self):
-            self.__kb_hook = game_kb.hook(self.__save_input)
-
-        def unhook(self):
-            game_kb.unhook(self.__kb_hook)
-
     class MapObject:
         def __init__(self, x, y):
             self.x: int = x
@@ -181,12 +202,11 @@ def __play():
         if score > defs.Get.best_score():
             defs.Set.best_score(score)
         if show_lose_text:
-            render.you_lose()
+            render(renders.you_lose)
         kb.unhook()
-        render.back_to_menu_text()
         pause(2)
 
-    kb = Keyboard()
+    kb = __Keyboard()
     worm = Worm()
     plus = Point()
     separator = Point()
@@ -217,7 +237,7 @@ def __play():
             worm.add_tail()
             plus.respawn(collide_check=worm)
 
-        render.game_map(score, worm, plus, separator)
+        render(renders.game_map, score=score, worm=worm, plus=plus, separator=separator)
         
         pause(current_level_time)
 
@@ -233,49 +253,78 @@ def __play():
             elif last_input == controls.in_dict['right']:
                 worm.change_direction('right')
             elif last_input == 'b':
-                render.clear()
+                renders.clear()
                 game_over(show_lose_text=False)
                 break
 
 
-def __level_select():
+def __settings():
+    class BackToMenu(Exception):
+        pass
+
+    def back_to_menu():
+        raise BackToMenu
+
+    def level_select():
+        kb = __Keyboard()
+        renders.clear()
+        while True:
+            current_level = f.get(vars.files_data_current_level)
+            render(renders.level_select)
+            kb.hook()
+            while True:
+                if not kb.key_pressed():
+                    last_input = kb.get_input()
+                    if last_input == 'left' and current_level > 1:
+                        kb.reset_input()
+                        f.update(vars.files_data_current_level, current_level - 1)
+                        break
+                    elif last_input == 'right' and current_level < 4:
+                        kb.reset_input()
+                        f.update(vars.files_data_current_level, current_level + 1)
+                        break
+                    elif last_input == 'b':
+                        kb.unhook()
+                        render(renders.back_to_menu_text)
+                        pause(1)
+                        return
+
+    def controls():
+        render(renders.controls)
+        options = 'b'
+
+        """
+        use this string when you implement key binding feature
+        options = defs.Get.controls().in_list
+        options.append('b')
+        """
+
+        match __Keyboard.detect(options):
+            case 'b':
+                render(renders.back_to_menu_text)
+                pause(1)
+
+    def score_reset():
+        render(renders.score_reset_question)
+        match __Keyboard.detect('y', 'n'):
+            case 'y':
+                f.update(vars.files_data_best_score, 0)
+                render(renders.score_reset_complete)
+            case 'n':
+                render(renders.back_to_menu_text)
+        pause(2)
+
+    settings_options = [
+        {'name': 'Level change', 'def': level_select},
+        {'name': 'Controls', 'def': controls},
+        {'name': 'Reset best score', 'def': score_reset},
+        {'name': 'Back to menu', 'def': back_to_menu},
+    ]
     while True:
-        render.level_select()
-        choice = __pressed_key('1', '2', '3', '4', 'b')
-        if choice in ('1', '2', '3', '4'):
-            f.update(vars.files_data_current_level, choice)
-        else:
-            render.back_to_menu_text()
-            pause(1)
-            return
-
-
-def __controls():
-    render.controls()
-    options = 'b'
-    
-    """
-    use this string when you implement key binding feature
-    options = defs.Get.controls().in_list
-    options.append('b')
-    """
-    
-    match __pressed_key(options):
-        case 'b':
-            render.back_to_menu_text()
-            pause(1)
-
-
-def __score_reset():
-    render.score_reset_question()
-    match __pressed_key('y', 'n'):
-        case 'y':
-            f.update(vars.files_data_best_score, 0)
-            render.score_reset_complete()
-        case 'n':
-            pass
-    render.back_to_menu_text()
-    pause(2)
+        try:
+            __build_menu(renders.settings, settings_options)
+        except BackToMenu:
+            break
 
 
 if __name__ == "__main__":

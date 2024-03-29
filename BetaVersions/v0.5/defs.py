@@ -11,9 +11,11 @@ def show_error():
 
 
 class Get:
+    @staticmethod
     def best_score():
         return f.get(vars.files_data_best_score)
 
+    @staticmethod
     def controls():
         class Container:
             def __init__(self, __controls_list):
@@ -27,20 +29,15 @@ class Get:
         controls_list = f.get_list(vars.files_data_controls)
         return Container(controls_list)
 
+    @staticmethod
     def current_level():
         return f.get(vars.files_data_current_level)
 
 
 class Set:
+    @staticmethod
     def best_score(arg: int):
         f.update(vars.files_data_best_score, arg)
-
-
-def adapted_list(args):
-    if type(args[0]) is list:
-        return args[0]
-    else:
-        return args
 
 
 def seconds_passed(__saved_time: datetime, __current_time: datetime):

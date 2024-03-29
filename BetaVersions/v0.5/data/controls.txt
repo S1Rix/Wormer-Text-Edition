@@ -1,4 +1,4 @@
-w
-a
-s
-d
+up
+left
+down
+right
