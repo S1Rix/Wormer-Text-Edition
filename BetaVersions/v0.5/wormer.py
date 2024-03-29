@@ -7,19 +7,21 @@ Date of release - 29.03.24
 """
 
 import os
-
+import traceback
 import keyboard
-
 from time import sleep as pause
-
 from random import randint as random
 
-import vars
-import renders
-from renders import render
-import defs
-import files_interaction as f
-
+try:
+    import vars
+    import renders
+    from renders import render
+    import defs
+    import files_interaction as f
+except Exception:
+    traceback.print_exc()
+    os.system('pause')
+    quit()
 
 class __Keyboard:
     def __init__(self):
@@ -291,18 +293,31 @@ def __settings():
 
     def controls():
         render(renders.controls)
-        options = 'b'
 
-        """
-        use this string when you implement key binding feature
-        options = defs.Get.controls().in_list
-        options.append('b')
-        """
-
-        match __Keyboard.detect(options):
-            case 'b':
-                render(renders.back_to_menu_text)
-                pause(1)
+        options_list = defs.Get.controls().in_list
+        options_list.append('b')
+        
+        button = __Keyboard.detect(*options_list)
+        if button in options_list[:-1]:
+            options_dict = defs.Get.controls().in_dict
+            option_key = defs.find_key_in(options_dict, button)
+            render(renders.control_edit, selected_control=option_key)
+            kb = __Keyboard()
+            kb.hook()
+            while True:
+                if not kb.key_pressed():
+                    button = kb.get_input()
+                    if button in options_list:
+                        kb.reset_input()
+                        print('you can not bind this key')
+                    else:
+                        kb.unhook()
+                        options_dict[option_key] = button
+                        defs.Set.controls(list(options_dict.values()))
+                        break
+        elif button == 'b':
+            render(renders.back_to_menu_text)
+            pause(1)
 
     def score_reset():
         render(renders.score_reset_question)

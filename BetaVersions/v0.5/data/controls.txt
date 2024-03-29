@@ -1,4 +1,4 @@
-up
+None
 left
 down
 right

@@ -27,6 +27,10 @@ class Get:
                     'right': __controls_list[3]
                 }
         controls_list = f.get_list(vars.files_data_controls)
+        default_controls = ['up', 'left', 'down', 'right']
+        if controls_list:
+            f.update_list(vars.files_data_controls, default_controls)
+            controls_list = default_controls
         return Container(controls_list)
 
     @staticmethod
@@ -38,6 +42,16 @@ class Set:
     @staticmethod
     def best_score(arg: int):
         f.update(vars.files_data_best_score, arg)
+    
+    @staticmethod
+    def controls(args: list):
+        f.update_list(vars.files_data_controls, args)
+
+
+def find_key_in(dictionary: dict, value):
+    for key in dictionary:
+        if dictionary[key] == value:
+            return key
 
 
 def seconds_passed(__saved_time: datetime, __current_time: datetime):

@@ -47,6 +47,18 @@ def __text_in_line(text: str, space_amount: int = 16, align: str = 'center'):
     return f' |{complete_line1 + text + complete_line2}|'
 
 
+def __beautiful_control_icons(controls):
+    controls_icons = {
+        'up': '^', 
+        'left': '<', 
+        'down': '>', 
+        'right': 'v'}
+    for i in range(len(controls)):
+        if controls[i] in controls_icons:
+            controls[i] = controls_icons[controls[i]]
+    return controls
+
+
 def __rendered_options(options, selected_option):
     options = [option['name'] for option in options]
     options[selected_option] = f'>> {options[selected_option]} <<'
@@ -197,9 +209,8 @@ def level_select():
 def controls():
     all_controls = defs.Get.controls().in_list
     all_controls_text = ['up', 'left', 'down', 'right']
-    all_controls_emojis = ['⭡', '⭠', '⭣', '⭢']
-    if all_controls == all_controls_text:
-        all_controls = all_controls_emojis
+    
+    all_controls = __beautiful_control_icons(all_controls)
     
     text_list = []
     for i in range(len(all_controls)):
@@ -212,6 +223,20 @@ def controls():
     __printfile('controls_title')
     __printlines(*text_list)
     __printfile('back_to_menu_control')
+
+
+def control_edit(**kwargs):
+    controls = defs.Get.controls().in_dict
+    selected_control = kwargs['selected_control']
+    
+    clear()
+    __printfile('controls_edit_title')
+    __printlines(
+        __texture_line,
+        __text_in_line(f'{controls[selected_control]} - {selected_control}'),
+        __texture_line
+    )
+    __printfile('controls_edit_wait_input')
 
 
 def score_reset_question():
