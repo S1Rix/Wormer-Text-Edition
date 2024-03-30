@@ -207,23 +207,21 @@ def level_select():
     __printfile('back_to_menu_control')
 
 
-def controls():
-    all_controls = defs.Get.controls().in_list
-    all_controls_text = ['up', 'left', 'down', 'right']
+def controls(**kwargs):
+    options = kwargs['options']
+    selected_option = kwargs['selected_option']
     
-    all_controls = __beautiful_control_icons(*all_controls)
-    
-    text_list = []
-    for i in range(len(all_controls)):
-        text_list.append(
-            __text_in_line(f'{all_controls[i]} - {all_controls_text[i]}', align='left'))
-    text_list.insert(0, __texture_line)
-    text_list.append(__texture_line)
+    controls_options = __rendered_options(options, selected_option)
     
     clear()
     __printfile('controls_title')
-    __printlines(*text_list)
-    __printfile('back_to_menu_control')
+    __printlines(*controls_options)
+
+
+def control_text(**kwargs):
+    control_button = __beautiful_control_icons(kwargs['control_button'])[0]
+    action = defs.find_key_in(defs.Get.controls().in_dict, control_button)
+    return f'{control_button} - {action}'
 
 
 def control_edit(**kwargs):

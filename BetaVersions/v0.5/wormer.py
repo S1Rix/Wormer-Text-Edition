@@ -223,8 +223,6 @@ def __play():
 
     kb.hook()
     controls = defs.Get.controls()
-    controls_list = controls.in_list
-    controls_list.append('b')
 
     while True:
         score = len(worm) - 1
@@ -249,14 +247,9 @@ def __play():
         last_input = kb.get_input()
         if last_input:
             kb.reset_input()
-            if last_input == controls.in_dict['up']:
-                worm.change_direction('up')
-            elif last_input == controls.in_dict['left']:
-                worm.change_direction('left')
-            elif last_input == controls.in_dict['down']:
-                worm.change_direction('down')
-            elif last_input == controls.in_dict['right']:
-                worm.change_direction('right')
+            if last_input in controls.in_list:
+                new_direction = defs.find_key_in(controls.in_dict, last_input)
+                worm.change_direction(new_direction)
             elif last_input == 'b':
                 renders.clear()
                 game_over(show_lose_text=False)
@@ -295,6 +288,20 @@ def __settings():
                         return
 
     def controls():
+
+        controls_options = [
+            {'name': render(renders.control_text, control_button='up'), 'def': edit_control},
+            {'name': render(renders.control_text, control_button='left'), 'def': edit_control},
+            {'name': render(renders.control_text, control_button='down'), 'def': edit_control},
+            {'name': render(renders.control_text, control_button='right'), 'def': edit_control},
+            {'name': 'Reset controls', 'def': reset_controls},
+            {'name': 'Back to menu', 'def': back_to_menu},
+        ]
+        while True:
+            try:
+                __build_menu(renders.controls, optins=controls_options)
+            except BackToMenu:
+                break
         while True:
             render(renders.controls)
 
@@ -331,6 +338,9 @@ def __settings():
                     defs.Set.controls(list(controls_dict.values()))
                     pause(0.25)
                     return
+
+    def reset_controls():
+        pass
 
     def score_reset():
         render(renders.score_reset_question)
