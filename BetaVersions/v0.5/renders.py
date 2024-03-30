@@ -47,16 +47,17 @@ def __text_in_line(text: str, space_amount: int = 16, align: str = 'center'):
     return f' |{complete_line1 + text + complete_line2}|'
 
 
-def __beautiful_control_icons(controls):
+def __beautiful_control_icons(*__controls):
+    __controls = list(__controls)
     controls_icons = {
         'up': '^', 
         'left': '<', 
         'down': '>', 
         'right': 'v'}
-    for i in range(len(controls)):
-        if controls[i] in controls_icons:
-            controls[i] = controls_icons[controls[i]]
-    return controls
+    for i in range(len(__controls)):
+        if __controls[i] in controls_icons:
+            __controls[i] = controls_icons[__controls[i]]
+    return __controls
 
 
 def __rendered_options(options, selected_option):
@@ -210,7 +211,7 @@ def controls():
     all_controls = defs.Get.controls().in_list
     all_controls_text = ['up', 'left', 'down', 'right']
     
-    all_controls = __beautiful_control_icons(all_controls)
+    all_controls = __beautiful_control_icons(*all_controls)
     
     text_list = []
     for i in range(len(all_controls)):
@@ -226,14 +227,16 @@ def controls():
 
 
 def control_edit(**kwargs):
-    controls = defs.Get.controls().in_dict
-    selected_control = kwargs['selected_control']
+    __controls = defs.Get.controls().in_dict
+    action = kwargs['action']
+
+    control = __beautiful_control_icons(__controls[action])[0]
     
     clear()
     __printfile('controls_edit_title')
     __printlines(
         __texture_line,
-        __text_in_line(f'{controls[selected_control]} - {selected_control}'),
+        __text_in_line(f'{control} - {action}'),
         __texture_line
     )
     __printfile('controls_edit_wait_input')

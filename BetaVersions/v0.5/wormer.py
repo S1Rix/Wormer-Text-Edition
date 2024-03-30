@@ -23,6 +23,7 @@ except Exception:
     os.system('pause')
     quit()
 
+
 class __Keyboard:
     def __init__(self):
         self.__last_input = None
@@ -205,6 +206,8 @@ def __play():
             defs.Set.best_score(score)
         if show_lose_text:
             render(renders.you_lose)
+        else:
+            render(renders.back_to_menu_text)
         kb.unhook()
         pause(2)
 
@@ -292,32 +295,42 @@ def __settings():
                         return
 
     def controls():
-        render(renders.controls)
+        while True:
+            render(renders.controls)
 
-        options_list = defs.Get.controls().in_list
-        options_list.append('b')
-        
-        button = __Keyboard.detect(*options_list)
-        if button in options_list[:-1]:
-            options_dict = defs.Get.controls().in_dict
-            option_key = defs.find_key_in(options_dict, button)
-            render(renders.control_edit, selected_control=option_key)
-            kb = __Keyboard()
-            kb.hook()
-            while True:
-                if not kb.key_pressed():
-                    button = kb.get_input()
-                    if button in options_list:
-                        kb.reset_input()
-                        print('you can not bind this key')
-                    else:
-                        kb.unhook()
-                        options_dict[option_key] = button
-                        defs.Set.controls(list(options_dict.values()))
-                        break
-        elif button == 'b':
-            render(renders.back_to_menu_text)
-            pause(1)
+            options_list = defs.Get.controls().in_list
+            options_list.append('b')
+
+            button = __Keyboard.detect(*options_list)
+            if button in options_list[:-1]:
+                edit_control(button)
+            elif button == 'b':
+                render(renders.back_to_menu_text)
+                pause(1)
+                return
+
+    def edit_control(button):
+        controls_list = defs.Get.controls().in_list
+        controls_dict = defs.Get.controls().in_dict
+
+        action = defs.find_key_in(controls_dict, button)
+
+        render(renders.control_edit, action=action)
+
+        kb = __Keyboard()
+        kb.hook()
+        while True:
+            if not kb.key_pressed():
+                button = kb.get_input()
+                if button in controls_list:
+                    kb.reset_input()
+                    print('you can not bind this key')
+                elif button is not None:
+                    kb.unhook()
+                    controls_dict[action] = button
+                    defs.Set.controls(list(controls_dict.values()))
+                    pause(0.25)
+                    return
 
     def score_reset():
         render(renders.score_reset_question)

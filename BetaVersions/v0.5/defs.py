@@ -28,7 +28,7 @@ class Get:
                 }
         controls_list = f.get_list(vars.files_data_controls)
         default_controls = ['up', 'left', 'down', 'right']
-        if controls_list:
+        if not controls_list or 'None' in controls_list:
             f.update_list(vars.files_data_controls, default_controls)
             controls_list = default_controls
         return Container(controls_list)
