@@ -299,7 +299,7 @@ def __settings():
         ]
         while True:
             try:
-                __build_menu(renders.controls, optins=controls_options)
+                __build_menu(renders.controls, options=controls_options)
             except BackToMenu:
                 break
         while True:
